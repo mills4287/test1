@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bet Analysis Tool</title>
+    <script>
+        async function fetchTeams() {
+            let response = await fetch("/teams");
+            let teams = await response.json();
+            populateDropdown("teamSelect", teams);
+            populateDropdown("opponentSelect", teams);
+        }
+
+        async function fetchPlayers() {
+            let teamName = document.getElementById("teamSelect").value;
+            if (!teamName) return;
+
+            let response = await fetch(`/players?team=${encodeURIComponent(teamName)}`);
+            let players = await response.json();
+
+            let playerDropdown = document.getElementById("playerSelect");
+            playerDropdown.innerHTML = "<option value=''>Select Player</option>";
+
+            players.forEach(player => {
+                let option = document.createElement("option");
+                option.value = player;
+                option.innerText = player;
+                playerDropdown.appendChild(option);
+            });
+        }
+
+        async function analyzeBet() {
+            let data = {
+                team: document.getElementById("teamSelect").value,
+                player: document.getElementById("playerSelect").value,
+                stat: document.getElementById("statSelect").value,
+                line: parseFloat(document.getElementById("betLine").value),
+                opponent: document.getElementById("opponentSelect").value
+            };
+
+            let response = await fetch("/analyze_bet", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            let result = await response.json();
+            document.getElementById("result").innerText = result.error ||
+                `${result.player} - ${result.stat} Average: ${result.player_avg}\n${result.assessment}\n${result.impact}`;
+        }
+
+        function populateDropdown(id, options) {
+            let dropdown = document.getElementById(id);
+            dropdown.innerHTML = "<option value=''>Select</option>";
+            options.forEach(option => {
+                let opt = document.createElement("option");
+                opt.value = option;
+                opt.innerText = option;
+                dropdown.appendChild(opt);
+            });
+        }
+
+        window.onload = async function () {
+            await fetchTeams();
+            populateDropdown("statSelect", ["PTS", "AST", "TRB", "BLK", "STL", "TOV", "FG%", "3P%", "FT%"]);
+        };
+    </script>
+</head>
+<body>
+    <h1>Bet Analysis Tool</h1>
+
+    <label>Select Team:</label>
+    <select id="teamSelect" onchange="fetchPlayers()"></select>
+
+    <label>Select Player:</label>
+    <select id="playerSelect"></select>
+
+    <label>Select Stat:</label>
+    <select id="statSelect"></select>
+
+    <label>Enter Betting Line:</label>
+    <input type="number" id="betLine" step="0.1">
+
+    <label>Select Opponent:</label>
+    <select id="opponentSelect"></select>
+
+    <button onclick="analyzeBet()">Analyze</button>
+
+    <h3>Results:</h3>
+    <p id="result"></p>
+</body>
+</html>
