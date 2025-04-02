@@ -30,17 +30,31 @@ const reverseTeamMapping = Object.fromEntries(
 
 // Fetch and populate teams dropdown
 async function populateTeams() {
+    console.log("populateTeams called");
     const teamsDropdown = document.getElementById("teamSelect");
+    const opponentDropdown = document.getElementById("opponentSelect");
+
+    if (!teamsDropdown || !opponentDropdown) {
+        console.error("Dropdown elements not found!");
+        return;
+    }
+
+    teamsDropdown.innerHTML = '<option value="">Select Team</option>'; // Reset
+    opponentDropdown.innerHTML = '<option value="">Select Opponent</option>'; // Reset
+
     Object.values(teamMapping).forEach(team => {
-        let option = document.createElement("option");
-        option.value = team;
-        option.textContent = team;
-        teamsDropdown.appendChild(option);
+        let option1 = document.createElement("option");
+        option1.value = team;
+        option1.textContent = team;
+        teamsDropdown.appendChild(option1);
+
+        let option2 = document.createElement("option");
+        option2.value = team;
+        option2.textContent = team;
+        opponentDropdown.appendChild(option2);
     });
 
-    // Also populate the opponent dropdown
-    const opponentDropdown = document.getElementById("opponentSelect");
-    opponentDropdown.innerHTML = teamsDropdown.innerHTML;
+    console.log("Teams populated successfully.");
 }
 
 // Fetch players based on selected team
