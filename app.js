@@ -28,21 +28,25 @@ const reverseTeamMapping = Object.fromEntries(
     Object.entries(teamMapping).map(([abbr, fullName]) => [fullName, abbr])
 );
 
-// Fetch all teams and populate the dropdown
+// Fetch and populate teams dropdown
 async function populateTeams() {
-    const teamsDropdown = document.getElementById("team-select");
+    const teamsDropdown = document.getElementById("teamSelect");
     Object.values(teamMapping).forEach(team => {
         let option = document.createElement("option");
         option.value = team;
         option.textContent = team;
         teamsDropdown.appendChild(option);
     });
+
+    // Also populate the opponent dropdown
+    const opponentDropdown = document.getElementById("opponentSelect");
+    opponentDropdown.innerHTML = teamsDropdown.innerHTML;
 }
 
 // Fetch players based on selected team
-async function populatePlayers() {
-    const team = document.getElementById("team-select").value;
-    const playersDropdown = document.getElementById("player-select");
+async function fetchPlayers() {
+    const team = document.getElementById("teamSelect").value;
+    const playersDropdown = document.getElementById("playerSelect");
     
     playersDropdown.innerHTML = '<option value="">Select Player</option>'; // Reset players list
     
@@ -63,11 +67,11 @@ async function populatePlayers() {
 
 // Analyze bet function (Replaces Flask API)
 async function analyzeBet() {
-    const team = document.getElementById("team-select").value;
-    const player = document.getElementById("player-select").value;
-    const stat = document.getElementById("stat-select").value;
-    const line = parseFloat(document.getElementById("line-input").value);
-    const opponent = document.getElementById("opponent-select").value;
+    const team = document.getElementById("teamSelect").value;
+    const player = document.getElementById("playerSelect").value;
+    const stat = document.getElementById("statSelect").value;
+    const line = parseFloat(document.getElementById("betLine").value);
+    const opponent = document.getElementById("opponentSelect").value;
 
     if (!team || !player || !stat || isNaN(line) || !opponent) {
         alert("Please fill all fields.");
@@ -123,8 +127,14 @@ async function analyzeBet() {
     `;
 }
 
-// Initialize team dropdown on page load
+// Initialize team dropdown and stat options on page load
 document.addEventListener("DOMContentLoaded", () => {
     populateTeams();
-    document.getElementById("team-select").addEventListener("change", populatePlayers);
+    const statDropdown = document.getElementById("statSelect");
+    ["PTS", "AST", "TRB", "BLK", "STL", "TOV", "FG%", "3P%", "FT%"].forEach(stat => {
+        let option = document.createElement("option");
+        option.value = stat;
+        option.textContent = stat;
+        statDropdown.appendChild(option);
+    });
 });
